@@ -54,41 +54,41 @@ async def get_rain_with_zip_code(zip_code = None):
   insee_code = await get_insee_code(zip_code)
   return await get_rain_with_insee_code(insee_code)
 
-def sunset_time(gps = None, day = None):
+def get_sunset_datetime(gps = None, day = None):
   if gps == None:
     logger.error("No GPS")
     return None
   if day == None:
     day = datetime.date.today()
-  return calculate_time(gps, day, False)
+  return calculate_datetime(gps, day, False)
 
-def sunrise_time(gps = None, day = None):
+def get_sunrise_datetime(gps = None, day = None):
   if gps == None:
     logger.error("No GPS")
     return None
   if day == None:
     day = datetime.date.today()
-  return calculate_time(gps, day, True)
+  return calculate_datetime(gps, day, True)
 
-def next_sunset_time(gps = None):
+def get_next_sunset_datetime(gps = None):
   if gps == None:
     logger.error("No GPS")
     return None
-  today_sunset = sunset_time()
+  today_sunset = get_sunset_datetime(gps)
   if (today_sunset - datetime.datetime.now()).total_seconds() < 0:
-    today_sunset = sunset_time(gps, datetime.date.today() + datetime.timedelta(days = 1))
+    today_sunset = get_sunset_datetime(gps, datetime.date.today() + datetime.timedelta(days = 1))
   return today_sunset
 
-def next_sunrise_time(gps = None):
+def get_next_sunrise_datetime(gps = None):
   if gps == None:
     logger.error("No GPS")
     return None
-  today_sunrise = sunrise_time()
+  today_sunrise = get_sunrise_datetime(gps)
   if (today_sunrise - datetime.datetime.now()).total_seconds() < 0:
-    today_sunrise = sunrise_time(gps, datetime.date.today() + datetime.timedelta(days = 1))
+    today_sunrise = get_sunrise_datetime(gps, datetime.date.today() + datetime.timedelta(days = 1))
   return today_sunrise
 
-def calculate_time(gps, day, is_rise):
+def calculate_datetime(gps, day, is_rise):
   if gps == None:
     logger.error("No GPS")
     return None
@@ -100,9 +100,12 @@ def calculate_time(gps, day, is_rise):
   return ephem.Date(next_event(sun, start=o.date) + utc_time*ephem.hour).datetime()
 
 async def debug():
-  print("==> Insee:")
+  print("==> Insee for 75001:")
   insee_code = await get_insee_code(75001)
   pprint.pprint(insee_code)
+  print("==> Insee for None:")
+  result = await get_rain_with_zip_code(None)
+  pprint.pprint(result)
   print("==> Rain for 75001:")
   result = await get_rain_with_zip_code(75001)
   pprint.pprint(result)
@@ -110,14 +113,17 @@ async def debug():
   result = await get_rain_with_insee_code(12345678)
   pprint.pprint(result)
   gps = { "lat": 48.853, "lon": 2.35 }
+  print("==> Today's sunset in Paris")
+  result = get_sunset_datetime(gps)
+  pprint.pprint(result)
+  print("==> Today's sunrise in Paris")
+  result = get_sunrise_datetime(gps)
+  pprint.pprint(result)
   print("==> Next sunset in Paris")
-  result = sunset_time(gps)
+  result = get_next_sunset_datetime(gps)
   pprint.pprint(result)
   print("==> Next sunrise in Paris")
-  result = sunrise_time(gps)
-  pprint.pprint(result)
-  print("==> insee None")
-  result = await get_rain_with_zip_code(None)
+  result = get_next_sunrise_datetime(gps)
   pprint.pprint(result)
 
 if __name__ == "__main__":
