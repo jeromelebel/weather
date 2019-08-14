@@ -4,6 +4,10 @@ Python3 library to get the rain predicition from Météo France (or Orange as a 
 
 Methods:
 
+- await weather.get_insee_code(zip_code)
+
+Returns the insee code based on a zip code.
+
 - await weather.get_rain_with_zip_code(zip_code)
 
 Returns the rain prediction for the zip code. The returned value is an array. Each item are for 5mn.
