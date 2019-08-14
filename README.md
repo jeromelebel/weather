@@ -1,4 +1,4 @@
-# weather
+# Weather
 
 Python3 library to get the rain predicition from Météo France (or Orange as a backup), and gets the next sunset and sunrise date. This library methods are Async IO.
 
