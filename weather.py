@@ -46,6 +46,16 @@ async def get_rain_with_insee_code(insee_code = None):
     result = await orange_weather.get_rain_with_insee_code(insee_code)
   return result
 
+async def get_rain_with_insee_code_gps(insee_code, gps):
+  global logger
+  if insee_code is None:
+    logger.error("No insee code")
+    return None
+  result = await meteo_france_weather.get_rain_with_gps(gps)
+  if result is None:
+    result = await orange_weather.get_rain_with_insee_code(insee_code)
+  return result
+
 async def get_rain_with_zip_code(zip_code = None):
   global logger
   if zip_code == None:
@@ -99,7 +109,11 @@ def calculate_datetime(gps, day, is_rise):
   next_event = o.next_rising if is_rise else o.next_setting
   return ephem.Date(next_event(sun, start=o.date) + utc_time*ephem.hour).datetime()
 
+def is_daylight(gps = None):
+  return get_next_sunset_datetime(gps) < get_next_sunrise_datetime(gps)
+
 async def debug():
+  gps = { "lat": 48.853, "lon": 2.35 }
   print("==> Insee for 75001:")
   insee_code = await get_insee_code(75001)
   pprint.pprint(insee_code)
@@ -112,7 +126,9 @@ async def debug():
   print("==> Rain for wrong insee code:")
   result = await get_rain_with_insee_code(12345678)
   pprint.pprint(result)
-  gps = { "lat": 48.853, "lon": 2.35 }
+  print("==> Rain for paris:")
+  result = await get_rain_with_insee_code_gps(12345678, gps)
+  pprint.pprint(result)
   print("==> Today's sunset in Paris")
   result = get_sunset_datetime(gps)
   pprint.pprint(result)
@@ -125,6 +141,15 @@ async def debug():
   print("==> Next sunrise in Paris")
   result = get_next_sunrise_datetime(gps)
   pprint.pprint(result)
+  print("==> Daylight")
+  result = is_daylight(gps)
+  pprint.pprint(result)
+  print("==> Next sunset")
+  result = calculate_datetime(gps, datetime.date.today(), False)
+  pprint.pprint(result)
+  pprint.pprint(datetime.datetime.timestamp(result))
+  print("==> current time")
+  pprint.pprint(time.time())
 
 if __name__ == "__main__":
   loop = asyncio.get_event_loop()
